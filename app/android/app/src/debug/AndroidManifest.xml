@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Debug only: allows plain-HTTP dev servers. Never enable in the main manifest. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
