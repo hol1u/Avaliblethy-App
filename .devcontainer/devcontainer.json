@@ -1,0 +1,24 @@
+{
+  "name": "Avaliblethy Flutter",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "containerEnv": {
+    "FLUTTER_VERSION": "3.47.7"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/usr/local/flutter/bin"
+  },
+  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends curl git unzip xz-utils zip libglu1-mesa && sudo git clone --depth 1 -b $FLUTTER_VERSION https://github.com/flutter/flutter.git /usr/local/flutter && sudo chown -R vscode:vscode /usr/local/flutter && git config --global --add safe.directory /usr/local/flutter && /usr/local/flutter/bin/flutter config --no-analytics --enable-web && /usr/local/flutter/bin/flutter precache --web",
+  "postCreateCommand": "cd app && /usr/local/flutter/bin/flutter pub get",
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": { "label": "Flutter web", "onAutoForward": "openBrowser" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["Dart-Code.dart-code", "Dart-Code.flutter"]
+    }
+  }
+}
