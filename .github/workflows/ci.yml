@@ -2,7 +2,19 @@ name: CI
 
 on:
   push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
   pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   FLUTTER_VERSION: "3.47.7"
@@ -14,13 +26,14 @@ jobs:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-          cache-dependency-path: app/pubspec.lock
+          pub-cache: true
+          pub-cache-key: pub-${{ runner.os }}-${{ hashFiles('app/pubspec.lock') }}
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test

@@ -49,6 +49,19 @@ Open **Settings** (drawer / sidebar) to pick the provider.
 
 Note: settings (including the API key) are stored in plain `shared_preferences`. Secure storage is out of scope for Stage 1.
 
+## Networking: HTTP vs HTTPS
+
+Release builds only allow HTTPS to remote servers; plain HTTP works only in development setups.
+
+- **Android**: `INTERNET` is declared in the main manifest. Cleartext (HTTP) traffic is blocked by default (target SDK 28+).
+  Only the *debug* manifest (`app/android/app/src/debug/AndroidManifest.xml`) sets `usesCleartextTraffic="true"`, so
+  `flutter run` can reach `http://` dev servers. Release/profile builds must use HTTPS. An emulator reaches the host as `10.0.2.2`.
+- **iOS**: App Transport Security blocks plain HTTP to remote hosts. `Info.plist` deliberately has no ATS exception. For a dev
+  server use HTTPS (e.g. a tunnel or local certificate), or add a temporary exception locally without committing it.
+- **macOS**: the sandbox needs `com.apple.security.network.client`, set in both `Release.entitlements` and
+  `DebugProfile.entitlements`. ATS applies as on iOS.
+- **Windows / web**: no restriction from the platform; on web the server must allow CORS and an HTTPS page cannot call an HTTP server (mixed content).
+
 ## Architecture
 
 ```

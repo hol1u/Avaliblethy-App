@@ -1,0 +1,17 @@
+# Generated and IDE files must never be tracked
+build/
+.dart_tool/
+.idea/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+.flutter-plugins-dependencies
+
+# Secrets
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+key.properties
