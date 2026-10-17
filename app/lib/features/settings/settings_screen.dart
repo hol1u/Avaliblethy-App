@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app_providers.dart';
@@ -37,8 +38,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     super.dispose();
   }
 
-  void _update(AppSettings Function(AppSettings) change) {
-    ref.read(settingsProvider.notifier).update(change);
+  Future<void> _update(AppSettings Function(AppSettings) change) async {
+    try {
+      await ref.read(settingsProvider.notifier).update(change);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not save settings securely.')),
+      );
+    }
   }
 
   @override
@@ -90,6 +98,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 onChanged: (v) => _update((s) => s.copyWith(apiKey: v)),
               ),
+              if (kIsWeb) ...[
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Remember key on this device'),
+                  value: s.rememberApiKeyOnDevice,
+                  onChanged: (value) =>
+                      _update((s) => s.copyWith(rememberApiKeyOnDevice: value)),
+                ),
+                const Text(
+                  'Web storage is not truly secure. By default, the key is kept '
+                  'only in memory. Remember it only on a device you trust.',
+                ),
+                const SizedBox(height: 16),
+              ],
               const SizedBox(height: 16),
               TextField(
                 controller: _model,

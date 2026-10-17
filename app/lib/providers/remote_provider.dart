@@ -81,14 +81,20 @@ class RemoteProvider implements ChatProvider {
       await for (final data in parseSse(response.data!.stream)) {
         if (data.trim() == '[DONE]') break;
         final chunk = parseCompletionChunk(data);
-        if (chunk != null) controller.add(chunk);
+        if (chunk != null) {
+          controller.add(
+            chunk.error == null
+                ? chunk
+                : ChatChunk.error(_redactSecret(chunk.error!)),
+          );
+        }
       }
     } on DioException catch (e) {
       if (!CancelToken.isCancel(e)) {
-        controller.add(ChatChunk.error(await _describe(e)));
+        controller.add(ChatChunk.error(_redactSecret(await _describe(e))));
       }
-    } catch (e) {
-      controller.add(ChatChunk.error(e.toString()));
+    } catch (_) {
+      controller.add(ChatChunk.error('Request failed.'));
     } finally {
       await controller.close();
     }
@@ -108,14 +114,23 @@ class RemoteProvider implements ChatProvider {
       } catch (_) {}
       body = body.trim();
       if (body.length > 300) body = '${body.substring(0, 300)}…';
+      body = _redactSecret(body);
       return 'HTTP $status${body.isEmpty ? '' : ': $body'}';
     }
     return switch (e.type) {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.receiveTimeout ||
       DioExceptionType.sendTimeout => 'Request timed out.',
-      _ => 'Connection failed: ${e.message ?? e.error ?? 'unknown error'}',
+      _ =>
+        'Connection failed: ${_redactSecret(e.message ?? e.error?.toString() ?? 'unknown error')}',
     };
+  }
+
+  String _redactSecret(String message) {
+    final key = apiKey?.trim();
+    return key == null || key.isEmpty
+        ? message
+        : message.replaceAll(key, '[redacted]');
   }
 }
 

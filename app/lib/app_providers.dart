@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'data/api_key_storage.dart';
 import 'data/conversation_repository.dart';
 import 'data/database.dart';
 import 'data/settings_repository.dart';
@@ -13,6 +15,16 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('sharedPreferencesProvider not overridden'),
 );
 
+final apiKeyStorageProvider = Provider<ApiKeyStorage>(
+  (ref) => FlutterSecureApiKeyStorage(),
+);
+
+final isWebProvider = Provider<bool>((ref) => kIsWeb);
+
+final initialAppSettingsProvider = Provider<AppSettings>(
+  (ref) => const AppSettings(),
+);
+
 /// Must be overridden in `ProviderScope` with an opened database.
 final databaseProvider = Provider<AppDatabase>(
   (ref) => throw UnimplementedError('databaseProvider not overridden'),
@@ -23,12 +35,16 @@ final conversationRepositoryProvider = Provider<ConversationRepository>(
 );
 
 final settingsRepositoryProvider = Provider<SettingsRepository>(
-  (ref) => SettingsRepository(ref.watch(sharedPreferencesProvider)),
+  (ref) => SettingsRepository(
+    ref.watch(sharedPreferencesProvider),
+    ref.watch(apiKeyStorageProvider),
+    isWeb: ref.watch(isWebProvider),
+  ),
 );
 
 class SettingsNotifier extends Notifier<AppSettings> {
   @override
-  AppSettings build() => ref.watch(settingsRepositoryProvider).load();
+  AppSettings build() => ref.watch(initialAppSettingsProvider);
 
   Future<void> update(AppSettings Function(AppSettings) change) {
     state = change(state);

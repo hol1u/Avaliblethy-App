@@ -101,6 +101,23 @@ void main() {
     expect(chunks.single.error, contains('401'));
   });
 
+  test('redacts the API key from server errors', () async {
+    const secret = 'sensitive-api-token';
+    final provider = RemoteProvider(
+      baseUrl: 'http://example.test',
+      apiKey: '  $secret  ',
+      dio: Dio()
+        ..httpClientAdapter = FakeAdapter(
+          (_) =>
+              ResponseBody.fromString('{"error":"invalid key: $secret"}', 401),
+        ),
+    );
+
+    final chunks = await provider.streamChat(request).toList();
+
+    expect(chunks.single.error, isNot(contains(secret)));
+  });
+
   test('parseCompletionChunk', () {
     expect(parseCompletionChunk('not json'), isNull);
     expect(parseCompletionChunk('{"choices":[]}'), isNull);

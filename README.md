@@ -47,7 +47,13 @@ Open **Settings** (drawer / sidebar) to pick the provider.
   with `stream: true` (a trailing `/v1` in the base URL is tolerated).
   On web the server must allow CORS.
 
-Note: settings (including the API key) are stored in plain `shared_preferences`. Secure storage is out of scope for Stage 1.
+Settings other than the API key are stored in `shared_preferences`. On Android, iOS,
+macOS and Windows, the API key is stored with the platform secure-storage facility.
+On web, the key stays in memory and is not persisted by default. The optional
+**Remember key on this device** setting stores it in browser storage, which is not
+truly secure; use that option only on a device you trust. On the first launch after
+upgrading, an existing key is removed from `shared_preferences` and moved to secure
+storage on native platforms or memory on web unless remembering is enabled.
 
 ## Networking: HTTP vs HTTPS
 
